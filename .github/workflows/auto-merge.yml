@@ -31,7 +31,9 @@ jobs:
             for (let i = 0; i < 90; i++) {
               const { data: checks } = await github.rest.checks.listForRef({ owner, repo, ref: sha });
               const { data: status } = await github.rest.repos.getCombinedStatusForRef({ owner, repo, ref: sha });
-              const runs = checks.check_runs.filter(r => r.name !== 'auto-merge');
+              // This workflow and Harden Runner publish checks that finish only after this job exits.
+              const runs = checks.check_runs.filter(r =>
+                !['auto-merge', 'StepSecurity Harden-Runner'].includes(r.name));
               const statuses = status.statuses || [];
               const allRunsDone = runs.every(r => r.status === 'completed');
               const allStatusesDone = statuses.every(s => s.state !== 'pending');
