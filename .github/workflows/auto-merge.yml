@@ -52,8 +52,9 @@ jobs:
               await new Promise(r => setTimeout(r, 20000));
             }
             throw new Error('Timed out waiting for checks');
-      - name: Merge (non-major updates)
-        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+      # Fail closed: grouped updates may return null metadata. Only explicit minor/patch updates auto-merge.
+      - name: Merge (explicit patch and minor updates only)
+        if: contains(fromJSON('["version-update:semver-patch","version-update:semver-minor","security-update:semver-patch","security-update:semver-minor"]'), steps.metadata.outputs.update-type)
         run: gh pr merge --squash --delete-branch "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
