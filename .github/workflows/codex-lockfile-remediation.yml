@@ -17,8 +17,11 @@ jobs:
           node-version: 22
           cache: npm
       - name: Update vulnerable lockfile dependencies
+        id: audit
+        continue-on-error: true
         run: npm audit fix --package-lock-only --ignore-scripts
       - name: Commit lockfile only
+        if: steps.audit.outcome == 'success' || steps.audit.outcome == 'failure'
         shell: bash
         run: |
           changed="$(git diff --name-only)"
